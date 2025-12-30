@@ -1,0 +1,56 @@
+{
+  "categories": [
+    {
+      "id": "cat_001",
+      "name": "文化",
+      "slug": "culture",
+      "description": "中国传统文化相关内容",
+      "parent_id": null,
+      "level": 1,
+      "sort_order": 1,
+      "article_count": 1,
+      "created_at": "2025-12-01T08:00:00Z",
+      "updated_at": "2025-12-21T09:00:00Z"
+    },
+    {
+      "id": "cat_002",
+      "name": "历史",
+      "slug": "history",
+      "description": "中国历史相关内容",
+      "parent_id": null,
+      "level": 1,
+      "sort_order": 2,
+      "article_count": 1,
+      "created_at": "2025-12-01T08:15:00Z",
+      "updated_at": "2025-12-26T16:45:00Z"
+    },
+    {
+      "id": "cat_003",
+      "name": "旅游",
+      "slug": "travel",
+      "description": "旅游相关内容",
+      "parent_id": null,
+      "level": 1,
+      "sort_order": 3,
+      "article_count": 0,
+      "created_at": "2025-12-01T08:30:00Z",
+      "updated_at": "2025-12-01T08:30:00Z"
+    },
+    {
+      "id": "cat_004",
+      "name": "传统节日",
+      "slug": "traditional-festivals",
+      "description": "中国传统节日相关内容",
+      "parent_id": "cat_001",
+      "level": 2,
+      "sort_order": 1,
+      "article_count": 0,
+      "created_at": "2025-12-01T08:45:00Z",
+      "updated_at": "2025-12-01T08:45:00Z"
+    }
+  ],
+  "metadata": {
+    "total_categories": 4,
+    "last_updated": "2025-12-26T16:45:00Z"
+  }
+}

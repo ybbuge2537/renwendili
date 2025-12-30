@@ -1,0 +1,44 @@
+{
+  "tags": [
+    {
+      "id": "tag_001",
+      "name": "文化",
+      "slug": "culture",
+      "description": "与文化相关的标签",
+      "article_count": 1,
+      "created_at": "2025-12-01T09:00:00Z",
+      "updated_at": "2025-12-21T09:00:00Z"
+    },
+    {
+      "id": "tag_002",
+      "name": "传统",
+      "slug": "traditional",
+      "description": "与传统相关的标签",
+      "article_count": 1,
+      "created_at": "2025-12-01T09:15:00Z",
+      "updated_at": "2025-12-21T09:00:00Z"
+    },
+    {
+      "id": "tag_003",
+      "name": "历史",
+      "slug": "history",
+      "description": "与历史相关的标签",
+      "article_count": 1,
+      "created_at": "2025-12-01T09:30:00Z",
+      "updated_at": "2025-12-26T16:45:00Z"
+    },
+    {
+      "id": "tag_004",
+      "name": "丝绸之路",
+      "slug": "silk-road",
+      "description": "与丝绸之路相关的标签",
+      "article_count": 1,
+      "created_at": "2025-12-01T09:45:00Z",
+      "updated_at": "2025-12-26T16:45:00Z"
+    }
+  ],
+  "metadata": {
+    "total_tags": 4,
+    "last_updated": "2025-12-26T16:45:00Z"
+  }
+}

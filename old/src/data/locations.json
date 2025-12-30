@@ -1,0 +1,183 @@
+{
+  "metadata": {
+    "version": "1.0",
+    "last_updated": "2025-12-27",
+    "total_locations": 6
+  },
+  "locations": [
+    {
+      "id": "loc_001",
+      "name": {
+        "zh": "北京故宫",
+        "en": "Forbidden City"
+      },
+      "coordinates": {
+        "lat": 39.9163,
+        "lng": 116.3972
+      },
+      "layer": "history",
+      "type": "历史古迹",
+      "description": {
+        "zh": "明清两代的皇家宫殿，世界最大的木质结构古建筑群。",
+        "en": "Imperial palace of the Ming and Qing dynasties, the largest wooden structure ancient building complex in the world."
+      },
+      "details": [
+        "世界文化遗产",
+        "建于1406-1420年",
+        "占地面积约72万平方米"
+      ],
+      "images": [
+        "https://example.com/forbidden-city-1.jpg",
+        "https://example.com/forbidden-city-2.jpg"
+      ],
+      "tags": ["中国", "历史", "建筑", "故宫"],
+      "created_at": "2025-12-27T00:00:00",
+      "updated_at": "2025-12-27T00:00:00"
+    },
+    {
+      "id": "loc_002",
+      "name": {
+        "zh": "巴黎埃菲尔铁塔",
+        "en": "Eiffel Tower"
+      },
+      "coordinates": {
+        "lat": 48.8584,
+        "lng": 2.2945
+      },
+      "layer": "culture",
+      "type": "建筑地标",
+      "description": {
+        "zh": "法国巴黎的标志性建筑，1889年为巴黎世博会而建。",
+        "en": "Iconic structure in Paris, France, built for the 1889 Paris World's Fair."
+      },
+      "details": [
+        "高324米",
+        "由古斯塔夫·埃菲尔设计",
+        "每年约700万游客"
+      ],
+      "images": [
+        "https://example.com/eiffel-tower-1.jpg",
+        "https://example.com/eiffel-tower-2.jpg"
+      ],
+      "tags": ["法国", "文化", "建筑", "埃菲尔铁塔"],
+      "created_at": "2025-12-27T00:00:00",
+      "updated_at": "2025-12-27T00:00:00"
+    },
+    {
+      "id": "loc_003",
+      "name": {
+        "zh": "日本京都金阁寺",
+        "en": "Kinkaku-ji"
+      },
+      "coordinates": {
+        "lat": 35.0394,
+        "lng": 135.7298
+      },
+      "layer": "culture",
+      "type": "宗教建筑",
+      "description": {
+        "zh": "日本最著名的佛教寺庙之一，以金箔装饰的建筑闻名。",
+        "en": "One of Japan's most famous Buddhist temples, known for its gold-leaf covered architecture."
+      },
+      "details": [
+        "正式名称：鹿苑寺",
+        "建于1397年",
+        "1950年曾被烧毁，1955年重建"
+      ],
+      "images": [
+        "https://example.com/kinkakuji-1.jpg",
+        "https://example.com/kinkakuji-2.jpg"
+      ],
+      "tags": ["日本", "文化", "宗教", "金阁寺"],
+      "created_at": "2025-12-27T00:00:00",
+      "updated_at": "2025-12-27T00:00:00"
+    },
+    {
+      "id": "loc_004",
+      "name": {
+        "zh": "意大利罗马斗兽场",
+        "en": "Colosseum"
+      },
+      "coordinates": {
+        "lat": 41.8902,
+        "lng": 12.4922
+      },
+      "layer": "history",
+      "type": "历史古迹",
+      "description": {
+        "zh": "古罗马时期最大的圆形角斗场，世界七大奇迹之一。",
+        "en": "The largest amphitheater in ancient Rome, one of the Seven Wonders of the World."
+      },
+      "details": [
+        "建于公元70-80年",
+        "可容纳5-8万名观众",
+        "主要用于角斗士比赛和公共表演"
+      ],
+      "images": [
+        "https://example.com/colosseum-1.jpg",
+        "https://example.com/colosseum-2.jpg"
+      ],
+      "tags": ["意大利", "历史", "建筑", "斗兽场"],
+      "created_at": "2025-12-27T00:00:00",
+      "updated_at": "2025-12-27T00:00:00"
+    },
+    {
+      "id": "loc_005",
+      "name": {
+        "zh": "中国四川大熊猫基地",
+        "en": "Chengdu Research Base of Giant Panda Breeding"
+      },
+      "coordinates": {
+        "lat": 30.7475,
+        "lng": 104.1091
+      },
+      "layer": "lifestyle",
+      "type": "自然文化",
+      "description": {
+        "zh": "全球最大的大熊猫保护研究机构，致力于大熊猫的繁育和保护。",
+        "en": "The world's largest giant panda protection and research institution, dedicated to giant panda breeding and conservation."
+      },
+      "details": [
+        "成立于1987年",
+        "占地面积约92英亩",
+        "现有约150只大熊猫"
+      ],
+      "images": [
+        "https://example.com/panda-base-1.jpg",
+        "https://example.com/panda-base-2.jpg"
+      ],
+      "tags": ["中国", "生活", "自然", "大熊猫"],
+      "created_at": "2025-12-27T00:00:00",
+      "updated_at": "2025-12-27T00:00:00"
+    },
+    {
+      "id": "loc_006",
+      "name": {
+        "zh": "印度泰姬陵",
+        "en": "Taj Mahal"
+      },
+      "coordinates": {
+        "lat": 27.1751,
+        "lng": 78.0421
+      },
+      "layer": "culture",
+      "type": "建筑地标",
+      "description": {
+        "zh": "莫卧儿王朝皇帝沙贾汗为纪念爱妃而建的白色大理石陵墓。",
+        "en": "A white marble mausoleum built by Mughal emperor Shah Jahan in memory of his beloved wife."
+      },
+      "details": [
+        "世界文化遗产",
+        "建于1632-1653年",
+        "被誉为\"完美建筑\""
+      ],
+      "images": [
+        "https://example.com/taj-mahal-1.jpg",
+        "https://example.com/taj-mahal-2.jpg"
+      ],
+      "tags": ["印度", "文化", "建筑", "泰姬陵"],
+      "created_at": "2025-12-27T00:00:00",
+      "updated_at": "2025-12-27T00:00:00"
+    }
+  ]
+}

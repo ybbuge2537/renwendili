@@ -1,0 +1,67 @@
+{
+  "articles": [
+    {
+      "id": "art_001",
+      "title": { "zh": "中国传统文化概述", "en": "Overview of Chinese Traditional Culture" },
+      "content": { "zh": "中国传统文化博大精深...", "en": "Chinese traditional culture is extensive and profound..." },
+      "author_id": "user_001",
+      "status": "published",
+      "category_id": "cat_001",
+      "tags": ["文化", "传统"],
+      "views": 1500,
+      "comments_count": 25,
+      "created_at": "2025-12-20T10:00:00Z",
+      "updated_at": "2025-12-22T14:30:00Z",
+      "published_at": "2025-12-21T09:00:00Z",
+      "thumbnail": "20251220_abc123.png",
+      "is_featured": true,
+      "is_top": false
+    },
+    {
+      "id": "art_002",
+      "title": { "zh": "丝绸之路的历史与影响", "en": "History and Influence of the Silk Road" },
+      "content": { "zh": "丝绸之路是古代东西方文明交流的重要通道...", "en": "The Silk Road was an important channel for cultural exchange between East and West in ancient times..." },
+      "author_id": "user_002",
+      "status": "pending",
+      "category_id": "cat_002",
+      "tags": ["历史", "丝绸之路"],
+      "views": 0,
+      "comments_count": 0,
+      "created_at": "2025-12-26T16:45:00Z",
+      "updated_at": "2025-12-27T08:20:00Z",
+      "published_at": null,
+      "thumbnail": null,
+      "is_featured": false,
+      "is_top": false
+    },
+    {
+      "id": "art_003",
+      "title": { "zh": "北京故宫游记", "en": "A Trip to the Forbidden City in Beijing" },
+      "content": { "zh": "今天我参观了北京故宫，这是明清两代的皇宫，是世界上现存规模最大、保存最为完整的木质结构古建筑之一...", "en": "Today I visited the Forbidden City in Beijing, the imperial palace of the Ming and Qing dynasties, which is one of the largest and best-preserved wooden structures in the world..." },
+      "author_id": "user_001",
+      "status": "published",
+      "category_id": "cat_003",
+      "tags": ["旅游", "北京", "故宫"],
+      "views": 500,
+      "comments_count": 10,
+      "created_at": "2025-12-29T10:00:00Z",
+      "updated_at": "2025-12-29T10:30:00Z",
+      "published_at": "2025-12-29T10:30:00Z",
+      "thumbnail": "20251229_forbidden_city.png",
+      "is_featured": false,
+      "is_top": false,
+      "coordinates": { "lat": "39.9163", "lng": "116.3972" },
+      "trackData": [
+        [39.9158, 116.3967],
+        [39.9160, 116.3970],
+        [39.9163, 116.3972],
+        [39.9165, 116.3975],
+        [39.9168, 116.3978]
+      ]
+    }
+  ],
+  "metadata": {
+    "total_articles": 3,
+    "last_updated": "2025-12-29T10:30:00Z"
+  }
+}

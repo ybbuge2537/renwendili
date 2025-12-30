@@ -1,0 +1,109 @@
+{
+  "website_settings": {
+    "site_name": "文舆世界",
+    "site_domain": "www.wenyushijie.com",
+    "logo": "logo.png",
+    "favicon": "favicon.ico",
+    "copyright": "© 2025 文舆世界 版权所有",
+    "navigation": [
+      {
+        "id": "nav_001",
+        "name": "首页",
+        "url": "/",
+        "sort_order": 1,
+        "is_visible": true
+      },
+      {
+        "id": "nav_002",
+        "name": "文化",
+        "url": "/culture",
+        "sort_order": 2,
+        "is_visible": true
+      },
+      {
+        "id": "nav_003",
+        "name": "历史",
+        "url": "/history",
+        "sort_order": 3,
+        "is_visible": true
+      },
+      {
+        "id": "nav_004",
+        "name": "旅游",
+        "url": "/travel",
+        "sort_order": 4,
+        "is_visible": true
+      }
+    ]
+  },
+  "email_settings": {
+    "smtp_server": "smtp.163.com",
+    "smtp_port": 465,
+    "smtp_secure": true,
+    "smtp_username": "noreply@wenyushijie.com",
+    "smtp_password": "password123",
+    "sender_name": "文舆世界",
+    "sender_email": "noreply@wenyushijie.com"
+  },
+  "seo_settings": {
+    "global_keywords": "人文地理,中国文化,历史,旅游",
+    "global_description": "文舆世界 - 探索中国的人文地理之美",
+    "home_title": "文舆世界 - 探索中国的人文地理之美",
+    "home_description": "文舆世界是一个专注于中国人文地理的知识共享平台",
+    "home_keywords": "人文地理,中国文化,历史,旅游"
+  },
+  "security_settings": {
+    "login_timeout": 30,
+    "password_complexity": {
+      "min_length": 8,
+      "require_uppercase": true,
+      "require_lowercase": true,
+      "require_digit": true,
+      "require_special": false
+    },
+    "ip_whitelist": ["127.0.0.1", "192.168.1.0/24"]
+  },
+  "database_settings": {
+    "host": "www.ybbuge.com",
+    "port": 3306,
+    "username": "shijie",
+    "password": "12345@67890"
+  },
+  "logs": {
+    "operation_logs": [
+      {
+        "id": "log_001",
+        "user_id": "user_001",
+        "username": "admin",
+        "action": "login",
+        "content": "用户登录系统",
+        "ip": "127.0.0.1",
+        "result": "success",
+        "created_at": "2025-12-27T10:30:00Z"
+      },
+      {
+        "id": "log_002",
+        "user_id": "user_002",
+        "username": "editor",
+        "action": "create_article",
+        "content": "创建文章《丝绸之路的历史与影响》",
+        "ip": "127.0.0.1",
+        "result": "success",
+        "created_at": "2025-12-26T16:45:00Z"
+      }
+    ],
+    "error_logs": [
+      {
+        "id": "error_001",
+        "level": "error",
+        "message": "数据库连接失败",
+        "stack_trace": "Error: Connection refused\n    at ...",
+        "ip": "127.0.0.1",
+        "created_at": "2025-12-25T14:20:00Z"
+      }
+    ]
+  },
+  "metadata": {
+    "last_updated": "2025-12-27T10:30:00Z"
+  }
+}
