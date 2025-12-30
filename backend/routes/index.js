@@ -3,6 +3,7 @@ const express = require('express');
 const regionRoutes = require('./regionRoutes.js');
 const topicRoutes = require('./topicRoutes.js');
 const userRoutes = require('./userRoutes.js');
+const articleRoutes = require('./articleRoutes.js');
 
 const router = express.Router();
 
@@ -10,6 +11,7 @@ const router = express.Router();
 router.use('/regions', regionRoutes);
 router.use('/topics', topicRoutes);
 router.use('/users', userRoutes);
+router.use('/articles', articleRoutes);
 
 // 测试路由
 router.get('/ping', (req, res) => {

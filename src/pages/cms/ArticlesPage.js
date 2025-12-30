@@ -21,7 +21,20 @@ function ArticlesPage() {
     const fetchArticles = async () => {
       try {
         const articlesData = await articleApi.getAllArticles();
-        setArticles(articlesData);
+        // 转换API返回的数据格式，确保前端组件可以正确使用
+        const formattedArticles = articlesData.map(article => ({
+          id: article.article_id,
+          title: article.title,
+          content: article.content,
+          authorId: article.author_id,
+          author: article.author_name || '未知作者', // 如果API返回了作者名称，使用作者名称
+          category: article.category || '未分类',
+          region_id: article.region_id,
+          status: article.status,
+          date: article.create_time ? new Date(article.create_time).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+          update_time: article.update_time
+        }));
+        setArticles(formattedArticles);
       } catch (error) {
         console.error('获取文章列表失败:', error);
         // 如果API调用失败，可以使用模拟数据作为备选
@@ -98,21 +111,52 @@ function ArticlesPage() {
 
   const handleSaveArticle = async (article) => {
     try {
+      // 准备发送到API的数据，确保与后端模型匹配
+      const articleData = {
+        title: article.title,
+        content: article.content,
+        author_id: loggedInUser?.id || 1, // 使用当前登录用户ID或默认ID
+        region_id: article.region_id || null,
+        status: article.status || 'draft'
+        // 如果需要其他字段，可以在这里添加
+      };
+
       if (isEditing) {
         // 更新现有文章
-        const updatedArticle = await articleApi.updateArticle(article.id, article);
-        setArticles(articles.map(art => 
-          art.id === updatedArticle.id ? updatedArticle : art
-        ));
+        const updatedArticle = await articleApi.updateArticle(article.id, articleData);
+        // 更新本地状态，保持前端数据一致性
+        setArticles(articles.map(art => {
+          if (art.id === updatedArticle.article_id) {
+            return {
+              ...art,
+              id: updatedArticle.article_id,
+              title: updatedArticle.title,
+              content: updatedArticle.content,
+              authorId: updatedArticle.author_id,
+              region_id: updatedArticle.region_id,
+              status: updatedArticle.status,
+              update_time: updatedArticle.update_time,
+              date: new Date(updatedArticle.update_time).toISOString().split('T')[0]
+            };
+          }
+          return art;
+        }));
       } else {
         // 添加新文章
-        const articleToAdd = {
-          ...article,
-          author: loggedInUser?.username || 'admin',
-          date: new Date().toISOString().split('T')[0]
+        const newArticle = await articleApi.createArticle(articleData);
+        // 添加到本地状态，保持前端数据一致性
+        const formattedNewArticle = {
+          id: newArticle.article_id,
+          title: newArticle.title,
+          content: newArticle.content,
+          authorId: newArticle.author_id,
+          author: loggedInUser?.username || '未知作者',
+          region_id: newArticle.region_id,
+          status: newArticle.status,
+          date: new Date(newArticle.create_time).toISOString().split('T')[0],
+          update_time: newArticle.update_time
         };
-        const newArticle = await articleApi.createArticle(articleToAdd);
-        setArticles([...articles, newArticle]);
+        setArticles([...articles, formattedNewArticle]);
       }
       setShowEditor(false);
       setEditingArticle(null);

@@ -25,7 +25,7 @@ class RegionModel {
     const lng = location.coordinates.lng;
     const lat = location.coordinates.lat;
     
-    const results = await executeQuery(sql, [region_name, parent_id || 0, lng, lat, population, language, description]);
+    const results = await executeQuery(sql, [region_name, parent_id || null, lng, lat, population, language, description]);
     return await this.getRegionById(results.insertId);
   }
 
@@ -33,7 +33,7 @@ class RegionModel {
   static async updateRegion(regionId, regionData) {
     const { region_name, parent_id, location, population, language, description } = regionData;
     let sql = 'UPDATE region SET region_name = ?, parent_id = ?, population = ?, language = ?, description = ?';
-    const params = [region_name, parent_id || 0, population, language, description];
+    const params = [region_name, parent_id || null, population, language, description];
     
     // 如果提供了location，则更新经纬度
     if (location) {

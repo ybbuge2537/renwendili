@@ -376,11 +376,12 @@
   max-width: none !important;
 }
 
-/* 当显示编辑器时，左侧列表缩进到10%大小 */
+/* 当显示编辑器时，左侧列表保留30%宽度 */
 .articles-page.with-editor .articles-list-container {
-  flex: 0.1 !important;
-  max-width: 10% !important;
+  flex: 0.3 !important;
+  max-width: 30% !important;
   width: auto !important;
+  overflow-x: auto;
 }
 
 /* 右侧编辑器容器 */
