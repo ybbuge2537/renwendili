@@ -77,23 +77,33 @@ function ArticlesPage() {
   const categories = [...new Set(articles.map(article => article.category))];
 
   const handleAddArticle = () => {
-    // 显示分栏编辑器
     setEditingArticle({
       title: '',
       content: '',
-      category: '',
+      category: 'culture',
       tags: '',
-      region: '',
+      region_id: '',
       status: 'draft',
-      coverImage: ''
+      cover_image: ''
     });
     setIsEditing(false);
     setShowEditor(true);
   };
 
   const handleEditArticle = (article) => {
-    // 显示分栏编辑器
-    setEditingArticle(article);
+    setEditingArticle({
+      id: article.id,
+      article_id: article.id,
+      title: article.title,
+      content: article.content,
+      category: article.category || 'culture',
+      tags: article.tags || '',
+      region_id: article.region_id || '',
+      status: article.status || 'draft',
+      cover_image: article.cover_image || '',
+      coordinates_lat: article.coordinates_lat || '',
+      coordinates_lng: article.coordinates_lng || ''
+    });
     setIsEditing(true);
     setShowEditor(true);
   };
@@ -111,20 +121,21 @@ function ArticlesPage() {
 
   const handleSaveArticle = async (article) => {
     try {
-      // 准备发送到API的数据，确保与后端模型匹配
       const articleData = {
         title: article.title,
         content: article.content,
-        author_id: loggedInUser?.id || 1, // 使用当前登录用户ID或默认ID
+        author_id: loggedInUser?.id || 1,
         region_id: article.region_id || null,
-        status: article.status || 'draft'
-        // 如果需要其他字段，可以在这里添加
+        status: article.status || 'draft',
+        coordinates_lat: article.coordinates_lat || null,
+        coordinates_lng: article.coordinates_lng || null,
+        category: article.category || 'culture',
+        tags: article.tags || null,
+        cover_image: article.cover_image || null
       };
 
       if (isEditing) {
-        // 更新现有文章
-        const updatedArticle = await articleApi.updateArticle(article.id, articleData);
-        // 更新本地状态，保持前端数据一致性
+        const updatedArticle = await articleApi.updateArticle(article.id, articleData, loggedInUser?.id || 1);
         setArticles(articles.map(art => {
           if (art.id === updatedArticle.article_id) {
             return {
@@ -135,6 +146,9 @@ function ArticlesPage() {
               authorId: updatedArticle.author_id,
               region_id: updatedArticle.region_id,
               status: updatedArticle.status,
+              category: updatedArticle.category,
+              coordinates_lat: updatedArticle.coordinates_lat,
+              coordinates_lng: updatedArticle.coordinates_lng,
               update_time: updatedArticle.update_time,
               date: new Date(updatedArticle.update_time).toISOString().split('T')[0]
             };
@@ -153,6 +167,9 @@ function ArticlesPage() {
           author: loggedInUser?.username || '未知作者',
           region_id: newArticle.region_id,
           status: newArticle.status,
+          category: newArticle.category,
+          coordinates_lat: newArticle.coordinates_lat,
+          coordinates_lng: newArticle.coordinates_lng,
           date: new Date(newArticle.create_time).toISOString().split('T')[0],
           update_time: newArticle.update_time
         };
@@ -210,7 +227,7 @@ function ArticlesPage() {
 
   return (
     <CMSLayout>
-      <div className={`articles-page ${showEditor ? 'with-editor' : ''}`}>
+      <div className="articles-page">
         {/* 第一行：标题和搜索框 */}
         <div className="main-header">
           <h1>文章管理</h1>
@@ -252,67 +269,69 @@ function ArticlesPage() {
           </div>
         </div>
 
-        <div className="articles-content-wrapper">
-          {/* 左侧文章列表 */}
-          <div className="articles-list-container">
-            <div className="articles-table-container">
-              <table className="articles-table">
-                <thead>
-                  <tr>
-                    <th>
+        {/* 文章列表 */}
+        <div className="articles-list-container">
+          <div className="articles-table-container">
+            <table className="articles-table">
+              <thead>
+                <tr>
+                  <th>
+                    <input 
+                      type="checkbox" 
+                      checked={selectedArticles.length === filteredArticles.length && filteredArticles.length > 0} 
+                      onChange={handleSelectAll} 
+                    />
+                  </th>
+                  <th>ID</th>
+                  <th>标题</th>
+                  <th>作者</th>
+                  <th>分类</th>
+                  <th>日期</th>
+                  <th>状态</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredArticles.map(article => (
+                  <tr key={article.id}>
+                    <td>
                       <input 
                         type="checkbox" 
-                        checked={selectedArticles.length === filteredArticles.length && filteredArticles.length > 0} 
-                        onChange={handleSelectAll} 
+                        checked={selectedArticles.includes(article.id)} 
+                        onChange={() => handleSelectArticle(article.id)} 
                       />
-                    </th>
-                    <th>标题</th>
-                    <th>作者</th>
-                    <th>分类</th>
-                    <th>日期</th>
-                    <th>状态</th>
-                    <th>操作</th>
+                    </td>
+                    <td>{article.id}</td>
+                    <td className="article-title">{article.title}</td>
+                    <td>{article.author}</td>
+                    <td>{article.category}</td>
+                    <td>{article.date}</td>
+                    <td>
+                      <span className={`status-badge ${article.status}`}>
+                        {article.status === 'published' ? '已发布' : '草稿'}
+                      </span>
+                    </td>
+                    <td className="actions">
+                      {canEditArticle(loggedInUser, article) && (
+                        <button className="edit-button" onClick={() => handleEditArticle(article)}>编辑</button>
+                      )}
+                      {canDeleteArticle(loggedInUser, article) && (
+                        <button className="delete-button" onClick={() => handleDeleteArticle(article.id)}>
+                          删除
+                        </button>
+                      )}
+                    </td>
                   </tr>
-                </thead>
-                <tbody>
-                  {filteredArticles.map(article => (
-                    <tr key={article.id}>
-                      <td>
-                        <input 
-                          type="checkbox" 
-                          checked={selectedArticles.includes(article.id)} 
-                          onChange={() => handleSelectArticle(article.id)} 
-                        />
-                      </td>
-                      <td className="article-title">{article.title}</td>
-                      <td>{article.author}</td>
-                      <td>{article.category}</td>
-                      <td>{article.date}</td>
-                      <td>
-                        <span className={`status-badge ${article.status}`}>
-                          {article.status === 'published' ? '已发布' : '草稿'}
-                        </span>
-                      </td>
-                      <td className="actions">
-                        {canEditArticle(loggedInUser, article) && (
-                          <button className="edit-button" onClick={() => handleEditArticle(article)}>编辑</button>
-                        )}
-                        {canDeleteArticle(loggedInUser, article) && (
-                          <button className="delete-button" onClick={() => handleDeleteArticle(article.id)}>
-                            删除
-                          </button>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                ))}
+              </tbody>
+            </table>
           </div>
+        </div>
 
-          {/* 右侧文章编辑器 */}
-          {showEditor && (
-            <div className="articles-editor-container">
+        {/* 文章编辑模态框 */}
+        {showEditor && (
+          <div className="editor-modal-overlay" onClick={handleCancelEdit}>
+            <div className="editor-modal" onClick={(e) => e.stopPropagation()}>
               <div className="editor-header">
                 <h2>{isEditing ? '编辑文章' : '添加新文章'}</h2>
                 <button className="close-button" onClick={handleCancelEdit}>
@@ -327,8 +346,8 @@ function ArticlesPage() {
                 />
               </div>
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </CMSLayout>
   );

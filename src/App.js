@@ -7,11 +7,11 @@ import ArticlesPage from './pages/cms/ArticlesPage.js';
 import MediaPage from './pages/cms/MediaPage.js';
 import CategoriesPage from './pages/cms/CategoriesPage.js';
 import UsersPage from './pages/cms/UsersPage.js';
+import RolesPage from './pages/cms/RolesPage.js';
 import SystemSettingsPage from './pages/cms/SystemSettingsPage.js';
 import RegisterPage from './pages/user/RegisterPage.js';
 import LoginPage from './pages/user/LoginPage.js';
 import UserProfilePage from './pages/user/UserProfilePage.js';
-import TestLoginPage from './pages/TestLoginPage.js';
 import TopNav from './components/Navigation/TopNav.js';
 import HamburgerMenu from './components/Navigation/HamburgerMenu.js';
 import MobileBottomNav from './components/Navigation/MobileBottomNav.js';
@@ -61,6 +61,7 @@ import AboutFeedbackPage from './pages/about/AboutFeedbackPage.js';
 import AboutContactPage from './pages/about/AboutContactPage.js';
 // 文章详情页
 import ArticleDetailPage from './pages/ArticleDetailPage.js';
+import ArticleBrowsePage from './pages/ArticleBrowsePage.js';
 
 // 登录模态框组件
 const LoginModal = ({ isOpen, onClose, onLoginSuccess }) => {
@@ -184,7 +185,7 @@ function App() {
             <Route path="/creation/drafts" element={<CreationDraftsPage />} />
             
             {/* 文章详情页 */}
-            <Route path="/article/:id" element={<ArticleDetailPage />} />
+            <Route path="/article/:id" element={<ArticleBrowsePage />} />
             
             {/* 个人中心 */}
             <Route path="/user/register" element={<RegisterPage />} />
@@ -209,10 +210,8 @@ function App() {
             <Route path="/cms/media" element={<MediaPage />} />
             <Route path="/cms/categories" element={<CategoriesPage />} />
             <Route path="/cms/users" element={<UsersPage />} />
+            <Route path="/cms/roles" element={<RolesPage />} />
             <Route path="/cms/settings" element={<SystemSettingsPage />} />
-            
-            {/* 测试页面 */}
-            <Route path="/test-login" element={<TestLoginPage />} />
           </Routes>
         </main>
         

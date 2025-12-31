@@ -10,6 +10,7 @@ const permissions = {
       media: true,
       categories: true,
       users: true,
+      roles: true,
       settings: true
     },
     actions: {
@@ -50,6 +51,7 @@ const permissions = {
       media: false,
       categories: false,
       users: false,
+      roles: false,
       settings: false
     },
     actions: {
@@ -90,6 +92,7 @@ const permissions = {
       media: true,
       categories: true,
       users: false,
+      roles: false,
       settings: false
     },
     actions: {
@@ -130,6 +133,7 @@ const permissions = {
       media: true,
       categories: true,
       users: false,
+      roles: false,
       settings: false
     },
     actions: {
@@ -170,6 +174,7 @@ const permissions = {
       media: true,
       categories: true,
       users: false,
+      roles: false,
       settings: false
     },
     actions: {

@@ -5,10 +5,6 @@ const CreationArticlePage = () => {
   const [showSuccess, setShowSuccess] = useState(false);
 
   const handleSaveArticle = (article) => {
-    // 这里应该调用API保存文章
-    console.log('保存文章:', article);
-    
-    // 模拟保存成功
     setShowSuccess(true);
     setTimeout(() => {
       setShowSuccess(false);

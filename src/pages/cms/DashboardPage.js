@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import CMSLayout from '../../components/cms/CMSLayout.js';
+import { userApi, articleApi } from '../../services/api.js';
+import apiService from '../../services/apiService.js';
 import './DashboardPage.css';
 
 function DashboardPage() {
@@ -10,27 +12,51 @@ function DashboardPage() {
     totalMedia: 0
   });
 
-  // 模拟从API获取统计数据
-  useEffect(() => {
-    // 这里应该调用API获取真实数据
-    // 暂时使用模拟数据
-    const mockStats = {
-      totalArticles: 128,
-      totalUsers: 45,
-      totalCategories: 23,
-      totalMedia: 512
-    };
-    setStats(mockStats);
-  }, []);
+  const [recentArticles, setRecentArticles] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // 模拟最近文章数据
-  const recentArticles = [
-    { id: 1, title: '全球气候变化对人文地理的影响', author: 'admin', date: '2025-12-27', status: 'published' },
-    { id: 2, title: '亚洲城市化进程分析', author: 'admin', date: '2025-12-26', status: 'draft' },
-    { id: 3, title: '欧洲文化遗产保护现状', author: 'admin', date: '2025-12-25', status: 'published' },
-    { id: 4, title: '非洲人口增长趋势预测', author: 'admin', date: '2025-12-24', status: 'published' },
-    { id: 5, title: '南美洲自然资源分布研究', author: 'admin', date: '2025-12-23', status: 'draft' }
-  ];
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        setLoading(true);
+
+        const [usersResponse, articlesResponse, regionsResponse, topicsResponse] = await Promise.all([
+          userApi.getAllUsers(),
+          articleApi.getAllArticles(),
+          apiService.region.getAllRegions(),
+          apiService.topic.getAllTopics()
+        ]);
+
+        const users = usersResponse.users || [];
+        const articles = Array.isArray(articlesResponse) ? articlesResponse : (articlesResponse.articles || []);
+        const regions = Array.isArray(regionsResponse) ? regionsResponse : (regionsResponse.regions || []);
+        const topics = Array.isArray(topicsResponse) ? topicsResponse : (topicsResponse.topics || []);
+
+        setStats({
+          totalArticles: articles.length,
+          totalUsers: users.length,
+          totalCategories: regions.length + topics.length,
+          totalMedia: 0
+        });
+
+        const formattedArticles = articles.slice(0, 5).map(article => ({
+          id: article.article_id || article.id,
+          title: article.title,
+          author: article.author_name || article.author || '未知',
+          date: article.create_time ? new Date(article.create_time).toISOString().split('T')[0] : '',
+          status: article.status || 'draft'
+        }));
+
+        setRecentArticles(formattedArticles);
+      } catch (error) {
+        console.error('获取仪表盘数据失败:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboardData();
+  }, []);
 
   return (
     <CMSLayout>
@@ -80,32 +106,42 @@ function DashboardPage() {
             <div className="section-header">
               <h2>最近文章</h2>
             </div>
-            <div className="articles-table-container">
-              <table className="articles-table">
-                <thead>
-                  <tr>
-                    <th>标题</th>
-                    <th>作者</th>
-                    <th>日期</th>
-                    <th>状态</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {recentArticles.map(article => (
-                    <tr key={article.id}>
-                      <td className="article-title">{article.title}</td>
-                      <td>{article.author}</td>
-                      <td>{article.date}</td>
-                      <td>
-                        <span className={`status-badge ${article.status}`}>
-                          {article.status === 'published' ? '已发布' : '草稿'}
-                        </span>
-                      </td>
+            {loading ? (
+              <div className="loading">加载中...</div>
+            ) : (
+              <div className="articles-table-container">
+                <table className="articles-table">
+                  <thead>
+                    <tr>
+                      <th>标题</th>
+                      <th>作者</th>
+                      <th>日期</th>
+                      <th>状态</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody>
+                    {recentArticles.length > 0 ? (
+                      recentArticles.map(article => (
+                        <tr key={article.id}>
+                          <td className="article-title">{article.title}</td>
+                          <td>{article.author}</td>
+                          <td>{article.date}</td>
+                          <td>
+                            <span className={`status-badge ${article.status}`}>
+                              {article.status === 'published' ? '已发布' : '草稿'}
+                            </span>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan="4" className="no-data">暂无文章</td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
 
           {/* 快捷操作 */}

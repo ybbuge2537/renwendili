@@ -1,13 +1,33 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { userApi } from '../../services/api.js';
 
 const LoginPage = ({ onLoginSuccess, onClose }) => {
   const [formData, setFormData] = useState({
     identifier: '',
-    password: ''
+    password: '',
+    captchaCode: ''
   });
   
   const [errors, setErrors] = useState({});
   const [errorMessage, setErrorMessage] = useState('');
+  const [captchaData, setCaptchaData] = useState(null);
+  const [captchaId, setCaptchaId] = useState('');
+
+  const fetchCaptcha = async () => {
+    try {
+      const response = await fetch('http://localhost:5001/api/auth/captcha');
+      const data = await response.json();
+      setCaptchaData(data.captchaImage);
+      setCaptchaId(data.captchaId);
+    } catch (error) {
+      console.error('获取验证码失败:', error);
+      setErrorMessage('获取验证码失败，请刷新页面重试');
+    }
+  };
+
+  useEffect(() => {
+    fetchCaptcha();
+  }, []);
 
   const validateForm = () => {
     const newErrors = {};
@@ -18,6 +38,10 @@ const LoginPage = ({ onLoginSuccess, onClose }) => {
     
     if (!formData.password) {
       newErrors.password = '密码不能为空';
+    }
+    
+    if (!formData.captchaCode.trim()) {
+      newErrors.captchaCode = '验证码不能为空';
     }
     
     setErrors(newErrors);
@@ -50,34 +74,38 @@ const LoginPage = ({ onLoginSuccess, onClose }) => {
     
     if (validateForm()) {
       try {
-        const response = await fetch('http://localhost:5001/api/users/login', {
+        const verifyResponse = await fetch('http://localhost:5001/api/auth/verify-captcha', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({
-            identifier: formData.identifier,
-            password: formData.password
+            captchaId,
+            captchaCode: formData.captchaCode
           })
         });
         
-        if (response.ok) {
-      const data = await response.json();
-      console.log('登录成功:', data);
-      // 保存用户信息到localStorage
-      localStorage.setItem('loggedInUser', JSON.stringify(data.user));
-      
-      // 调用登录成功回调
-      if (onLoginSuccess) {
-        onLoginSuccess(data.user);
-      }
-    } else {
-            const errorData = await response.json();
-            setErrorMessage(errorData.message || '登录失败，请检查您的用户名/邮箱/电话和密码');
-          }
+        if (!verifyResponse.ok) {
+          const errorData = await verifyResponse.json();
+          setErrorMessage(errorData.message || '验证码验证失败');
+          fetchCaptcha();
+          return;
+        }
+        
+        const data = await userApi.login({
+          identifier: formData.identifier,
+          password: formData.password
+        });
+        
+        localStorage.setItem('loggedInUser', JSON.stringify(data.user));
+        
+        if (onLoginSuccess) {
+          onLoginSuccess(data.user);
+        }
       } catch (error) {
         console.error('登录请求失败:', error);
-        setErrorMessage('登录请求失败，请稍后重试');
+        setErrorMessage(error.message || '登录请求失败，请稍后重试');
+        fetchCaptcha();
       }
     } else {
       setErrorMessage('请检查输入信息');
@@ -119,6 +147,36 @@ const LoginPage = ({ onLoginSuccess, onClose }) => {
               required 
             />
             {errors.password && <div style={{ color: '#dc3545', fontSize: '12px', marginTop: '4px' }}>{errors.password}</div>}
+          </div>
+          
+          <div className="form-group">
+            <label htmlFor="captchaCode">验证码:</label>
+            <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+              <input 
+                type="text" 
+                id="captchaCode" 
+                name="captchaCode"
+                value={formData.captchaCode} 
+                onChange={handleInputChange} 
+                placeholder="请输入验证码"
+                required
+                style={{ flex: 1 }}
+              />
+              <div 
+                dangerouslySetInnerHTML={{ __html: captchaData }} 
+                onClick={fetchCaptcha}
+                style={{ 
+                  cursor: 'pointer', 
+                  border: '1px solid #ddd', 
+                  borderRadius: '4px',
+                  padding: '5px',
+                  minWidth: '120px',
+                  textAlign: 'center'
+                }}
+                title="点击刷新验证码"
+              />
+            </div>
+            {errors.captchaCode && <div style={{ color: '#dc3545', fontSize: '12px', marginTop: '4px' }}>{errors.captchaCode}</div>}
           </div>
           
           <button type="submit" className="btn btn-primary" style={{ width: '100%', padding: '12px', marginTop: '10px' }}>登录</button>

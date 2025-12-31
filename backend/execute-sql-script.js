@@ -1,7 +1,7 @@
 // 使用Node.js执行SQL脚本
 import fs from 'fs/promises';
 import mysql from 'mysql2/promise';
-import dbConfig from './src/services/dbConfig.js';
+import dbConfig from './config/dbConfig.js';
 
 async function executeSqlScript() {
   try {

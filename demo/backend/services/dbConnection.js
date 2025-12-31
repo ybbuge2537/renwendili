@@ -1,12 +1,12 @@
 // 数据库连接服务
-import mysql from 'mysql2/promise';
-import dbConfig from './dbConfig.js';
+const mysql = require('mysql2/promise');
+const dbConfig = require('../config/dbConfig.js');
 
 // 创建连接池
 const pool = mysql.createPool(dbConfig);
 
 // 获取连接
-export const getConnection = async () => {
+const getConnection = async () => {
   try {
     const connection = await pool.getConnection();
     console.log('数据库连接成功');
@@ -18,7 +18,7 @@ export const getConnection = async () => {
 };
 
 // 执行SQL查询
-export const executeQuery = async (sql, params = []) => {
+const executeQuery = async (sql, params = []) => {
   let connection = null;
   try {
     connection = await getConnection();
@@ -37,7 +37,7 @@ export const executeQuery = async (sql, params = []) => {
 };
 
 // 执行事务
-export const executeTransaction = async (callback) => {
+const executeTransaction = async (callback) => {
   let connection = null;
   try {
     connection = await getConnection();
@@ -61,7 +61,7 @@ export const executeTransaction = async (callback) => {
 };
 
 // 关闭连接池
-export const closePool = async () => {
+const closePool = async () => {
   try {
     await pool.end();
     console.log('数据库连接池已关闭');
@@ -71,4 +71,10 @@ export const closePool = async () => {
   }
 };
 
-export default pool;
+module.exports = {
+  pool,
+  getConnection,
+  executeQuery,
+  executeTransaction,
+  closePool
+};

@@ -75,10 +75,10 @@ const mapProviders = {
     url: 'https://wprd01.is.autonavi.com/appmaptile?x={x}&y={y}&z={z}&lang=zh_cn&size=1&scl=1&style=7',
     attribution: '&copy; <a href="https://ditu.amap.com/">高德地图</a>'
   },
-  baidu: {
-    name: '百度地图',
-    url: 'https://maponline1.bdimg.com/onlinelabel/?qt=tile&x={x}&y={y}&z={z}&styles=pl&scaler=1&p=1',
-    attribution: '&copy; <a href="https://map.baidu.com/">百度地图</a>'
+  cartodb: {
+    name: 'CartoDB地图',
+    url: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
   }
 };
 
@@ -98,15 +98,18 @@ const MapComponent = ({ onLocationSelect, activeLayer, currentMapProvider, onMap
   }, [activeLayer]);
 
   useEffect(() => {
-    // 获取所有文章数据
+    // 获取所有已发布的文章数据
     const fetchArticles = async () => {
       const articlesData = await dataManager.getAllArticles();
-      // 过滤出有坐标信息的文章
-      const articlesWithCoords = articlesData.filter(article => article.coordinates && article.coordinates.lat && article.coordinates.lng);
+      // 过滤出有坐标信息的已发布文章
+      const articlesWithCoords = articlesData.filter(article => 
+        article.coordinates_lat && article.coordinates_lng && 
+        article.status === 'published'
+      );
       setArticles(articlesWithCoords);
     };
     fetchArticles();
-  }, []);
+  }, [activeLayer]);
 
   const handleMarkerClick = (location) => {
     onLocationSelect(location);
@@ -114,8 +117,6 @@ const MapComponent = ({ onLocationSelect, activeLayer, currentMapProvider, onMap
   };
 
   const handleArticleClick = (article) => {
-    // 处理文章点击，导航到文章详情页
-    console.log('点击文章:', article);
     navigate(`/article/${article.id}`);
   };
 
@@ -142,7 +143,7 @@ const MapComponent = ({ onLocationSelect, activeLayer, currentMapProvider, onMap
       
       <MapContainer 
         center={[20, 0]} 
-        zoom={2} 
+        zoom={3} 
         style={{ height: '100%', width: '100%' }}
         zoomControl={false}
         attributionControl={true}
@@ -190,14 +191,15 @@ const MapComponent = ({ onLocationSelect, activeLayer, currentMapProvider, onMap
         {articles.map((article) => (
           <Marker
             key={`article-${article.id}`}
-            position={[parseFloat(article.coordinates.lat), parseFloat(article.coordinates.lng)]}
-            icon={layerIcons.article}
+            position={[parseFloat(article.coordinates_lat), parseFloat(article.coordinates_lng)]}
+            icon={layerIcons[article.category] || layerIcons.article}
             eventHandlers={{ click: () => handleArticleClick(article) }}
           >
             <Popup>
               <div>
-                <h3>{article.title.zh}</h3>
-                <p>{article.content.zh.substring(0, 100)}...</p>
+                <h3>{article.title}</h3>
+                <p>{article.content.substring(0, 100)}...</p>
+                <p><small>分类: {article.category}</small></p>
                 <button onClick={() => handleArticleClick(article)}>
                   查看文章
                 </button>

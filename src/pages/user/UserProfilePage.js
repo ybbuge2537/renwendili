@@ -291,8 +291,6 @@ const UserProfilePage = () => {
 
   // 执行日志筛选
   const applyLogFilters = () => {
-    // 筛选逻辑（实际项目中应该调用后端API）
-    console.log('应用筛选条件:', logFilters);
   };
 
   // 导出日志

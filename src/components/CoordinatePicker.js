@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, ZoomControl, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -37,6 +37,13 @@ const CoordinatePicker = ({ initialCoordinates, onCoordinatesChange }) => {
     initialCoordinates || [39.9042, 116.4074] // 默认北京坐标
   );
 
+  // 当 initialCoordinates 改变时更新 position
+  useEffect(() => {
+    if (initialCoordinates && initialCoordinates.length === 2) {
+      setPosition(initialCoordinates);
+    }
+  }, [initialCoordinates]);
+
   // 处理坐标选择
   const handleCoordinateSelect = (latlng) => {
     const newPosition = [latlng.lat, latlng.lng];
@@ -50,7 +57,7 @@ const CoordinatePicker = ({ initialCoordinates, onCoordinatesChange }) => {
 
   return (
     <div className="coordinate-picker">
-      <h3>选择游玩坐标</h3>
+      <h3>选择坐标位置</h3>
       <div className="map-wrapper" onContextMenu={(e) => e.preventDefault()}>
         <MapContainer
           center={position}

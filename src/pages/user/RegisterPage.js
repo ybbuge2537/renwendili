@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import bcrypt from 'bcryptjs';
 
 const RegisterPage = () => {
@@ -7,12 +7,30 @@ const RegisterPage = () => {
     email: '',
     phone: '',
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
+    captchaCode: ''
   });
   
   const [errors, setErrors] = useState({});
   const [successMessage, setSuccessMessage] = useState('');
   const [validationStatus, setValidationStatus] = useState({});
+  const [captchaData, setCaptchaData] = useState(null);
+  const [captchaId, setCaptchaId] = useState('');
+
+  const fetchCaptcha = async () => {
+    try {
+      const response = await fetch('http://localhost:5001/api/auth/captcha');
+      const data = await response.json();
+      setCaptchaData(data.captchaImage);
+      setCaptchaId(data.captchaId);
+    } catch (error) {
+      console.error('获取验证码失败:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchCaptcha();
+  }, []);
   
   // Debounce function to delay API calls
   const debounce = (func, delay) => {
@@ -133,6 +151,10 @@ const RegisterPage = () => {
       newErrors.confirmPassword = '两次输入的密码不一致';
     }
     
+    if (!formData.captchaCode.trim()) {
+      newErrors.captchaCode = '验证码不能为空';
+    }
+    
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -167,19 +189,34 @@ const RegisterPage = () => {
     
     if (validateForm()) {
       try {
-        // Hash the password
+        const verifyResponse = await fetch('http://localhost:5001/api/auth/verify-captcha', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            captchaId,
+            captchaCode: formData.captchaCode
+          })
+        });
+        
+        if (!verifyResponse.ok) {
+          const errorData = await verifyResponse.json();
+          setErrors({ captchaCode: errorData.message || '验证码验证失败' });
+          fetchCaptcha();
+          return;
+        }
+        
         const hashedPassword = await bcrypt.hash(formData.password, 10);
         
-        // Prepare user data with default values
         const userData = {
           username: formData.username,
           password_hash: hashedPassword,
           email: formData.email,
-          phone: formData.phone, // Use actual phone value from form
-          role: 'user' // Default role as user
+          phone: formData.phone,
+          role: 'user'
         };
         
-        // Send data to server
         const response = await fetch('http://localhost:5001/api/users', {
           method: 'POST',
           headers: {
@@ -190,21 +227,20 @@ const RegisterPage = () => {
         
         if (response.ok) {
           const newUser = await response.json();
-          console.log('注册成功:', newUser);
           setSuccessMessage('注册成功！欢迎加入文舆世界！');
           
-          // Clear form
           setFormData({
             username: '',
             email: '',
             phone: '',
             password: '',
-            confirmPassword: ''
+            confirmPassword: '',
+            captchaCode: ''
           });
           
-          // Clear validation status and errors
           setValidationStatus({});
           setErrors({});
+          fetchCaptcha();
         } else {
           const errorData = await response.json();
           throw new Error(errorData.message || '注册失败');
@@ -212,8 +248,8 @@ const RegisterPage = () => {
       } catch (error) {
         console.error('注册错误:', error);
         setErrors({ submit: error.message });
-        // Clear success message if there was one
         setSuccessMessage('');
+        fetchCaptcha();
       }
     }
   };
@@ -300,6 +336,36 @@ const RegisterPage = () => {
               required 
             />
             {errors.confirmPassword && <div style={{ color: '#dc3545', fontSize: '12px', marginTop: '4px' }}>{errors.confirmPassword}</div>}
+          </div>
+          
+          <div className="form-group">
+            <label htmlFor="captchaCode">验证码:</label>
+            <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+              <input 
+                type="text" 
+                id="captchaCode" 
+                name="captchaCode"
+                value={formData.captchaCode} 
+                onChange={handleInputChange} 
+                placeholder="请输入验证码"
+                required
+                style={{ flex: 1 }}
+              />
+              <div 
+                dangerouslySetInnerHTML={{ __html: captchaData }} 
+                onClick={fetchCaptcha}
+                style={{ 
+                  cursor: 'pointer', 
+                  border: '1px solid #ddd', 
+                  borderRadius: '4px',
+                  padding: '5px',
+                  minWidth: '120px',
+                  textAlign: 'center'
+                }}
+                title="点击刷新验证码"
+              />
+            </div>
+            {errors.captchaCode && <div style={{ color: '#dc3545', fontSize: '12px', marginTop: '4px' }}>{errors.captchaCode}</div>}
           </div>
           
           <button type="submit" className="btn btn-primary" style={{ width: '100%', padding: '12px', marginTop: '10px' }}>注册</button>

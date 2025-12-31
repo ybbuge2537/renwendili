@@ -9,7 +9,6 @@ function UsersPage() {
   const navigate = useNavigate();
   const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser'));
 
-  // 检查用户是否有权限访问用户管理页面
   useEffect(() => {
     if (!loggedInUser) {
       navigate('/cms/login');
@@ -18,50 +17,64 @@ function UsersPage() {
     }
   }, [loggedInUser, navigate]);
 
-  // 用户管理
   const [users, setUsers] = useState([]);
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [showAddUserModal, setShowAddUserModal] = useState(false);
   const [showEditUserModal, setShowEditUserModal] = useState(false);
+  const [showResetPasswordModal, setShowResetPasswordModal] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
   const [newUser, setNewUser] = useState({
     username: '',
     email: '',
     password: '',
+    phone: '',
+    bio: '',
     role: 'user'
   });
   
-  // 筛选和搜索状态
   const [filterRole, setFilterRole] = useState('all');
+  const [filterStatus, setFilterStatus] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
-  
-  // 批量删除状态
   const [selectedUsers, setSelectedUsers] = useState([]);
-  
-  // 密码强度状态
   const [passwordStrength, setPasswordStrength] = useState('');
+  const [userStats, setUserStats] = useState({
+    total: 0,
+    active: 0,
+    inactive: 0,
+    locked: 0
+  });
 
-  // 从API获取用户数据
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const usersData = await userApi.getAllUsers();
-        // 转换API返回的数据结构以匹配前端需求
+        const response = await userApi.getAllUsers();
+        const usersData = response.users || [];
         const formattedUsers = usersData.map(user => ({
           id: user.user_id,
           username: user.username,
           email: user.email,
           phone: user.phone,
+          avatar: user.avatar_url,
+          bio: user.bio,
           role: user.role,
+          status: user.is_enabled ? 'active' : 'inactive',
           createdAt: user.create_time ? new Date(user.create_time).toISOString().split('T')[0] : '',
-          // 默认所有用户都是启用状态
-          status: user.status || 'active'
+          lastLoginTime: user.last_login_time ? new Date(user.last_login_time).toISOString().split('T')[0] : '从未登录',
+          loginCount: user.login_count || 0,
+          failedAttempts: user.login_error_count || 0,
+          lockedUntil: null
         }));
         setUsers(formattedUsers);
         setFilteredUsers(formattedUsers);
+        
+        setUserStats({
+          total: formattedUsers.length,
+          active: formattedUsers.filter(u => u.status === 'active').length,
+          inactive: formattedUsers.filter(u => u.status === 'inactive').length,
+          locked: formattedUsers.filter(u => u.lockedUntil && new Date(u.lockedUntil) > new Date()).length
+        });
       } catch (error) {
         console.error('获取用户列表失败:', error);
-        // 失败时显示空列表
         setUsers([]);
         setFilteredUsers([]);
       }
@@ -70,38 +83,41 @@ function UsersPage() {
     fetchUsers();
   }, []);
 
-  // 用户管理功能
   const handleAddUser = async (e) => {
     e.preventDefault();
     
-    // 弹出确认与取消窗口
     if (window.confirm('确定要添加此用户吗？其他详细信息可由用户登录后自行补全。')) {
       try {
-        // 调用API添加用户
         const userData = {
           username: newUser.username,
-          password: newUser.password, // 密码将在后端进行加密处理
+          password: newUser.password,
           email: newUser.email,
-          phone: '', // 暂时留空，由用户自己补全
+          phone: newUser.phone || '',
+          bio: newUser.bio || '',
           role: newUser.role,
-          status: 'active' // 新用户默认启用
+          status: 'active'
         };
         
         const addedUser = await userApi.createUser(userData);
         
-        // 更新成功后更新用户列表
         const formattedUser = {
           id: addedUser.user_id,
           username: addedUser.username,
           email: addedUser.email,
           phone: addedUser.phone,
+          avatar: addedUser.avatar,
+          bio: addedUser.bio,
           role: addedUser.role,
+          status: addedUser.status || 'active',
           createdAt: addedUser.create_time ? new Date(addedUser.create_time).toISOString().split('T')[0] : '',
-          status: addedUser.status || 'active'
+          lastLoginTime: '从未登录',
+          loginCount: 0,
+          failedAttempts: 0,
+          lockedUntil: null
         };
         
         setUsers([...users, formattedUser]);
-        setNewUser({ username: '', email: '', password: '', role: 'user' });
+        setNewUser({ username: '', email: '', password: '', phone: '', bio: '', role: 'user' });
         setShowAddUserModal(false);
         alert('用户添加成功！');
       } catch (error) {
@@ -112,12 +128,9 @@ function UsersPage() {
   };
 
   const handleDeleteUser = async (id) => {
-    // 弹出确认与取消窗口
     if (window.confirm('确定要删除此用户吗？此操作不可恢复。')) {
       try {
-        // 调用API删除用户
         await userApi.deleteUser(id);
-        // 删除成功后更新用户列表
         setUsers(users.filter(user => user.id !== id));
         alert('用户删除成功！');
       } catch (error) {
@@ -132,6 +145,8 @@ function UsersPage() {
     setNewUser({
       username: user.username,
       email: user.email,
+      phone: user.phone || '',
+      bio: user.bio || '',
       role: user.role
     });
     setShowEditUserModal(true);
@@ -140,30 +155,27 @@ function UsersPage() {
   const handleUpdateUser = async (e) => {
     e.preventDefault();
     
-    // 弹出确认与取消窗口
     if (window.confirm('确定要更新此用户信息吗？')) {
       try {
-        // 调用API更新用户
         const updatedUser = await userApi.updateUser(currentUser.id, newUser);
         
-        // 更新成功后更新用户列表
         const updatedUsers = users.map(user => {
           if (user.id === currentUser.id) {
             return {
-              id: updatedUser.user_id,
+              ...user,
               username: updatedUser.username,
               email: updatedUser.email,
               phone: updatedUser.phone,
-              role: updatedUser.role,
-              createdAt: updatedUser.create_time ? new Date(updatedUser.create_time).toISOString().split('T')[0] : ''
+              bio: updatedUser.bio,
+              role: updatedUser.role
             };
           }
           return user;
-        })
+        });
         setUsers(updatedUsers);
         setShowEditUserModal(false);
         setCurrentUser(null);
-        setNewUser({ username: '', email: '', role: 'user' });
+        setNewUser({ username: '', email: '', password: '', phone: '', bio: '', role: 'user' });
         alert('用户信息更新成功！');
       } catch (error) {
         console.error('更新用户失败:', error);
@@ -171,20 +183,78 @@ function UsersPage() {
       }
     }
   };
+
+  const handleResetPassword = (user) => {
+    setCurrentUser(user);
+    setNewUser({ ...newUser, password: '' });
+    setShowResetPasswordModal(true);
+  };
+
+  const handleConfirmResetPassword = async (e) => {
+    e.preventDefault();
+    
+    if (window.confirm('确定要重置该用户的密码吗？')) {
+      try {
+        await userApi.resetPassword(currentUser.id, newUser.password);
+        setShowResetPasswordModal(false);
+        setCurrentUser(null);
+        setNewUser({ ...newUser, password: '' });
+        alert('密码重置成功！');
+      } catch (error) {
+        console.error('重置密码失败:', error);
+        alert('重置密码失败，请稍后重试');
+      }
+    }
+  };
+
+  const handleLockUser = async (user) => {
+    if (window.confirm('确定要锁定该用户吗？')) {
+      try {
+        await userApi.lockUser(user.id);
+        const updatedUsers = users.map(u => {
+          if (u.id === user.id) {
+            return { ...u, lockedUntil: new Date(Date.now() + 30 * 60 * 1000).toISOString().split('T')[0] };
+          }
+          return u;
+        });
+        setUsers(updatedUsers);
+        alert('用户已锁定！');
+      } catch (error) {
+        console.error('锁定用户失败:', error);
+        alert('锁定用户失败，请稍后重试');
+      }
+    }
+  };
+
+  const handleUnlockUser = async (user) => {
+    if (window.confirm('确定要解锁该用户吗？')) {
+      try {
+        await userApi.unlockUser(user.id);
+        const updatedUsers = users.map(u => {
+          if (u.id === user.id) {
+            return { ...u, lockedUntil: null };
+          }
+          return u;
+        });
+        setUsers(updatedUsers);
+        alert('用户已解锁！');
+      } catch (error) {
+        console.error('解锁用户失败:', error);
+        alert('解锁用户失败，请稍后重试');
+      }
+    }
+  };
   
-  // 处理用户输入变化
   const handleUserInputChange = (e) => {
     const { name, value } = e.target;
     setNewUser(prev => ({ ...prev, [name]: value }));
     
-    // 密码强度校验
     if (name === 'password') {
       const strength = checkPasswordStrength(value);
       setPasswordStrength(strength);
     }
   };
   
-  // 密码强度检查函数
   const checkPasswordStrength = (password) => {
     if (password.length === 0) return '';
     if (password.length < 6) return 'weak';
@@ -195,7 +265,6 @@ function UsersPage() {
     return 'medium';
   };
   
-  // 获取密码强度文本和样式
   const getPasswordStrengthInfo = () => {
     switch (passwordStrength) {
       case 'weak':
@@ -209,48 +278,48 @@ function UsersPage() {
     }
   };
   
-  // 筛选和搜索逻辑
   useEffect(() => {
     let result = [...users];
     
-    // 角色筛选
     if (filterRole !== 'all') {
       result = result.filter(user => user.role === filterRole);
     }
     
-    // 搜索查询
+    if (filterStatus !== 'all') {
+      if (filterStatus === 'locked') {
+        result = result.filter(user => user.lockedUntil && new Date(user.lockedUntil) > new Date());
+      } else {
+        result = result.filter(user => user.status === filterStatus);
+      }
+    }
+    
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       result = result.filter(user => 
         user.username.toLowerCase().includes(query) || 
-        user.email.toLowerCase().includes(query)
+        user.email.toLowerCase().includes(query) ||
+        (user.phone && user.phone.includes(query))
       );
     }
     
     setFilteredUsers(result);
-  }, [filterRole, searchQuery, users]);
+  }, [filterRole, filterStatus, searchQuery, users]);
   
-  // 处理角色筛选变化
   const handleFilterRoleChange = (e) => {
     setFilterRole(e.target.value);
   };
   
-  // 处理搜索查询变化
   const handleSearchChange = (e) => {
     setSearchQuery(e.target.value);
   };
   
-  // 处理用户状态切换
   const handleToggleUserStatus = async (user) => {
     const newStatus = user.status === 'active' ? 'inactive' : 'active';
     
-    // 弹出确认窗口
     if (window.confirm(`确定要${newStatus === 'active' ? '启用' : '禁用'}该用户吗？`)) {
       try {
-        // 调用API更新用户状态
-        await userApi.updateUser(user.id, { status: newStatus });
+        await userApi.updateUserStatus(user.id, newStatus);
         
-        // 更新成功后更新用户列表
         const updatedUsers = users.map(u => {
           if (u.id === user.id) {
             return {
@@ -270,7 +339,6 @@ function UsersPage() {
     }
   };
   
-  // 批量删除功能
   const handleToggleSelectUser = (userId) => {
     setSelectedUsers(prev => {
       if (prev.includes(userId)) {
@@ -295,15 +363,10 @@ function UsersPage() {
       return;
     }
     
-    // 弹出确认窗口
     if (window.confirm(`确定要删除选中的${selectedUsers.length}个用户吗？此操作不可恢复。`)) {
       try {
-        // 批量删除用户，逐个调用API
-        for (const userId of selectedUsers) {
-          await userApi.deleteUser(userId);
-        }
+        await userApi.batchDeleteUsers(selectedUsers);
         
-        // 更新用户列表
         const updatedUsers = users.filter(user => !selectedUsers.includes(user.id));
         setUsers(updatedUsers);
         setSelectedUsers([]);
@@ -315,23 +378,43 @@ function UsersPage() {
     }
   };
 
+  const strengthInfo = getPasswordStrengthInfo();
+
   return (
     <CMSLayout>
       <div className="users-page">
         <div className="main-header">
           <h1>用户管理</h1>
-          {/* 搜索功能 */}
           <div className="header-search">
             <input 
               type="text" 
-              placeholder="搜索用户名或邮箱..." 
+              placeholder="搜索用户名、邮箱或电话..." 
               value={searchQuery} 
               onChange={handleSearchChange}
               className="search-input"
             />
           </div>
         </div>
-        {/* 操作栏：添加用户、批量删除、角色筛选 */}
+        
+        <div className="stats-container">
+          <div className="stat-item">
+            <span className="stat-label">总用户数:</span>
+            <span className="stat-value">{userStats.total}</span>
+          </div>
+          <div className="stat-item">
+            <span className="stat-label">启用:</span>
+            <span className="stat-value stat-active">{userStats.active}</span>
+          </div>
+          <div className="stat-item">
+            <span className="stat-label">禁用:</span>
+            <span className="stat-value stat-inactive">{userStats.inactive}</span>
+          </div>
+          <div className="stat-item">
+            <span className="stat-label">锁定:</span>
+            <span className="stat-value stat-locked">{userStats.locked}</span>
+          </div>
+        </div>
+        
         <div className="action-bar">
           <button className="add-button" onClick={() => setShowAddUserModal(true)}>
             + 添加用户
@@ -359,7 +442,22 @@ function UsersPage() {
               <option value="viewer">查看者</option>
             </select>
           </div>
+          <div className="filter-section">
+            <label htmlFor="filter-status">状态筛选:</label>
+            <select 
+              id="filter-status" 
+              value={filterStatus} 
+              onChange={(e) => setFilterStatus(e.target.value)}
+              className="filter-select"
+            >
+              <option value="all">全部状态</option>
+              <option value="active">启用</option>
+              <option value="inactive">禁用</option>
+              <option value="locked">锁定</option>
+            </select>
+          </div>
         </div>
+        
         <div className="content-container">
           <div className="users-table-container">
             <table className="users-table">
@@ -379,6 +477,8 @@ function UsersPage() {
                   <th>电话</th>
                   <th>角色</th>
                   <th>创建时间</th>
+                  <th>最后登录</th>
+                  <th>登录次数</th>
                   <th>状态</th>
                   <th>操作</th>
                 </tr>
@@ -395,23 +495,44 @@ function UsersPage() {
                       />
                     </td>
                     <td className="user-id">{user.id}</td>
-                    <td className="user-username">{user.username}</td>
+                    <td className="user-username">
+                      {user.avatar && (
+                        <img 
+                          src={user.avatar} 
+                          alt={user.username} 
+                          className="user-avatar-small"
+                        />
+                      )}
+                      {user.username}
+                    </td>
                     <td className="user-email">{user.email}</td>
                     <td className="user-phone">{user.phone || '-'}</td>
                     <td className="user-role">
                       <span className={`role-badge role-${user.role}`}>{user.role}</span>
                     </td>
                     <td className="user-created-at">{user.createdAt}</td>
+                    <td className="user-last-login">{user.lastLoginTime}</td>
+                    <td className="user-login-count">{user.loginCount}</td>
                     <td className="user-status">
-                      <button 
-                        className={`status-button status-${user.status}`}
-                        onClick={() => handleToggleUserStatus(user)}
-                      >
-                        {user.status === 'active' ? '启用' : '禁用'}
-                      </button>
+                      {user.lockedUntil && new Date(user.lockedUntil) > new Date() ? (
+                        <span className="status-badge status-locked">锁定</span>
+                      ) : (
+                        <button 
+                          className={`status-button status-${user.status}`}
+                          onClick={() => handleToggleUserStatus(user)}
+                        >
+                          {user.status === 'active' ? '启用' : '禁用'}
+                        </button>
+                      )}
                     </td>
                     <td className="actions">
                       <button className="edit-button" onClick={() => handleEditUser(user)}>编辑</button>
+                      <button className="password-button" onClick={() => handleResetPassword(user)}>重置密码</button>
+                      {user.lockedUntil && new Date(user.lockedUntil) > new Date() ? (
+                        <button className="unlock-button" onClick={() => handleUnlockUser(user)}>解锁</button>
+                      ) : (
+                        <button className="lock-button" onClick={() => handleLockUser(user)}>锁定</button>
+                      )}
                       <button className="delete-button" onClick={() => handleDeleteUser(user.id)}>
                         删除
                       </button>
@@ -423,7 +544,6 @@ function UsersPage() {
           </div>
         </div>
 
-        {/* 添加用户模态框 */}
         {showAddUserModal && (
           <div className="modal-overlay">
             <div className="modal">
@@ -447,6 +567,23 @@ function UsersPage() {
                   />
                 </div>
                 <div className="form-group">
+                  <label htmlFor="user-password">密码</label>
+                  <input
+                    type="password"
+                    id="user-password"
+                    name="password"
+                    value={newUser.password}
+                    onChange={handleUserInputChange}
+                    placeholder="请输入密码"
+                    required
+                  />
+                  {passwordStrength && (
+                    <div className="password-strength" style={{ color: strengthInfo.color }}>
+                      密码强度: {strengthInfo.text}
+                    </div>
+                  )}
+                </div>
+                <div className="form-group">
                   <label htmlFor="user-email">邮箱</label>
                   <input
                     type="email"
@@ -459,23 +596,15 @@ function UsersPage() {
                   />
                 </div>
                 <div className="form-group">
-                  <label htmlFor="user-password">初始密码</label>
+                  <label htmlFor="user-phone">电话</label>
                   <input
-                    type="password"
-                    id="user-password"
-                    name="password"
-                    value={newUser.password}
+                    type="tel"
+                    id="user-phone"
+                    name="phone"
+                    value={newUser.phone}
                     onChange={handleUserInputChange}
-                    placeholder="请输入初始密码"
-                    required
+                    placeholder="请输入电话（可选）"
                   />
-                  {newUser.password.length > 0 && (
-                    <div className="password-strength" style={{ marginTop: '4px' }}>
-                      <span style={{ color: getPasswordStrengthInfo().color }}>
-                        密码强度: {getPasswordStrengthInfo().text}
-                      </span>
-                    </div>
-                  )}
                 </div>
                 <div className="form-group">
                   <label htmlFor="user-role">角色</label>
@@ -486,19 +615,33 @@ function UsersPage() {
                     onChange={handleUserInputChange}
                     required
                   >
-                    <option value="admin">管理员</option>
+                    <option value="user">普通用户</option>
                     <option value="editor">编辑</option>
                     <option value="writer">作者</option>
                     <option value="viewer">查看者</option>
                   </select>
                 </div>
-
+                <div className="form-group">
+                  <label htmlFor="user-bio">个人简介</label>
+                  <textarea
+                    id="user-bio"
+                    name="bio"
+                    value={newUser.bio}
+                    onChange={handleUserInputChange}
+                    placeholder="请输入个人简介（可选）"
+                    rows="3"
+                  />
+                </div>
                 <div className="form-actions">
-                  <button type="button" className="cancel-button" onClick={() => setShowAddUserModal(false)}>
-                    取消
+                  <button type="submit" className="submit-button">
+                    添加用户
                   </button>
-                  <button type="submit" className="save-button">
-                    保存
+                  <button
+                    type="button"
+                    className="cancel-button"
+                    onClick={() => setShowAddUserModal(false)}
+                  >
+                    取消
                   </button>
                 </div>
               </form>
@@ -506,7 +649,6 @@ function UsersPage() {
           </div>
         )}
 
-        {/* 编辑用户模态框 */}
         {showEditUserModal && (
           <div className="modal-overlay">
             <div className="modal">
@@ -518,51 +660,124 @@ function UsersPage() {
               </div>
               <form onSubmit={handleUpdateUser} className="user-form">
                 <div className="form-group">
-                  <label htmlFor="edit-user-username">用户名</label>
+                  <label htmlFor="edit-username">用户名</label>
                   <input
                     type="text"
-                    id="edit-user-username"
+                    id="edit-username"
                     name="username"
                     value={newUser.username}
                     onChange={handleUserInputChange}
-                    placeholder="请输入用户名"
                     required
                   />
                 </div>
                 <div className="form-group">
-                  <label htmlFor="edit-user-email">邮箱</label>
+                  <label htmlFor="edit-email">邮箱</label>
                   <input
                     type="email"
-                    id="edit-user-email"
+                    id="edit-email"
                     name="email"
                     value={newUser.email}
                     onChange={handleUserInputChange}
-                    placeholder="请输入邮箱"
                     required
                   />
                 </div>
                 <div className="form-group">
-                  <label htmlFor="edit-user-role">角色</label>
+                  <label htmlFor="edit-phone">电话</label>
+                  <input
+                    type="tel"
+                    id="edit-phone"
+                    name="phone"
+                    value={newUser.phone}
+                    onChange={handleUserInputChange}
+                  />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="edit-role">角色</label>
                   <select
-                    id="edit-user-role"
+                    id="edit-role"
                     name="role"
                     value={newUser.role}
                     onChange={handleUserInputChange}
                     required
                   >
-                    <option value="admin">管理员</option>
+                    <option value="user">普通用户</option>
                     <option value="editor">编辑</option>
                     <option value="writer">作者</option>
                     <option value="viewer">查看者</option>
                   </select>
                 </div>
-
+                <div className="form-group">
+                  <label htmlFor="edit-bio">个人简介</label>
+                  <textarea
+                    id="edit-bio"
+                    name="bio"
+                    value={newUser.bio}
+                    onChange={handleUserInputChange}
+                    rows="3"
+                  />
+                </div>
                 <div className="form-actions">
-                  <button type="button" className="cancel-button" onClick={() => setShowEditUserModal(false)}>
+                  <button type="submit" className="submit-button">
+                    更新用户
+                  </button>
+                  <button
+                    type="button"
+                    className="cancel-button"
+                    onClick={() => setShowEditUserModal(false)}
+                  >
                     取消
                   </button>
-                  <button type="submit" className="save-button">
-                    更新
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {showResetPasswordModal && (
+          <div className="modal-overlay">
+            <div className="modal">
+              <div className="modal-header">
+                <h2>重置密码</h2>
+                <button className="close-button" onClick={() => setShowResetPasswordModal(false)}>
+                  ×
+                </button>
+              </div>
+              <form onSubmit={handleConfirmResetPassword} className="user-form">
+                <div className="form-group">
+                  <label>用户名</label>
+                  <input
+                    type="text"
+                    value={currentUser?.username || ''}
+                    disabled
+                  />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="reset-password">新密码</label>
+                  <input
+                    type="password"
+                    id="reset-password"
+                    name="password"
+                    value={newUser.password}
+                    onChange={handleUserInputChange}
+                    placeholder="请输入新密码"
+                    required
+                  />
+                  {passwordStrength && (
+                    <div className="password-strength" style={{ color: strengthInfo.color }}>
+                      密码强度: {strengthInfo.text}
+                    </div>
+                  )}
+                </div>
+                <div className="form-actions">
+                  <button type="submit" className="submit-button">
+                    重置密码
+                  </button>
+                  <button
+                    type="button"
+                    className="cancel-button"
+                    onClick={() => setShowResetPasswordModal(false)}
+                  >
+                    取消
                   </button>
                 </div>
               </form>

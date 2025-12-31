@@ -6,13 +6,19 @@ const API_BASE_URL = 'http://localhost:5001/api';
 // 通用请求函数
 const request = async (url, options = {}) => {
   try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000);
+    
     const response = await fetch(`${API_BASE_URL}${url}`, {
       headers: {
         'Content-Type': 'application/json',
         ...options.headers
       },
-      ...options
+      ...options,
+      signal: controller.signal
     });
+    
+    clearTimeout(timeoutId);
     
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
@@ -21,6 +27,10 @@ const request = async (url, options = {}) => {
     
     return await response.json();
   } catch (error) {
+    if (error.name === 'AbortError') {
+      console.error('API请求超时:', url);
+      throw new Error('请求超时，请稍后重试');
+    }
     console.error('API请求失败:', error);
     throw error;
   }
@@ -118,6 +128,57 @@ const topicAPI = {
   }
 };
 
+// 文章管理API
+const articleAPI = {
+  // 获取所有文章
+  getAllArticles: async () => {
+    return await request('/articles');
+  },
+
+  // 根据ID获取文章
+  getArticleById: async (id) => {
+    return await request(`/articles/${id}`);
+  },
+
+  // 创建文章
+  createArticle: async (articleData) => {
+    return await request('/articles', {
+      method: 'POST',
+      body: JSON.stringify(articleData)
+    });
+  },
+
+  // 更新文章
+  updateArticle: async (id, articleData) => {
+    return await request(`/articles/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(articleData)
+    });
+  },
+
+  // 删除文章
+  deleteArticle: async (id) => {
+    return await request(`/articles/${id}`, {
+      method: 'DELETE'
+    });
+  },
+
+  // 根据作者ID获取文章
+  getArticlesByAuthor: async (authorId) => {
+    return await request(`/articles/author/${authorId}`);
+  },
+
+  // 根据地域ID获取文章
+  getArticlesByRegion: async (regionId) => {
+    return await request(`/articles/region/${regionId}`);
+  },
+
+  // 搜索文章
+  searchArticles: async (keyword) => {
+    return await request(`/articles/search/${keyword}`);
+  }
+};
+
 // 用户管理API
 const userAPI = {
   // 获取所有用户
@@ -173,6 +234,7 @@ const userAPI = {
 const apiService = {
   region: regionAPI,
   topic: topicAPI,
+  article: articleAPI,
   user: userAPI
 };
 

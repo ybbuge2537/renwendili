@@ -74,6 +74,14 @@ function CMSLayout({ children }) {
                 </Link>
               </li>
             )}
+            {checkPagePermission(loggedInUser, 'roles') && (
+              <li>
+                <Link to="/cms/roles" className="nav-link">
+                  <span className="nav-icon">🔐</span>
+                  <span className="nav-text">角色管理</span>
+                </Link>
+              </li>
+            )}
             {checkPagePermission(loggedInUser, 'settings') && (
               <li>
                 <Link to="/cms/settings" className="nav-link">

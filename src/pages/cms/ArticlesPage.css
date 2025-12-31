@@ -199,7 +199,7 @@
 }
 
 /* 模态框样式 */
-.modal-overlay {
+.editor-modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
@@ -210,24 +210,17 @@
   align-items: center;
   justify-content: center;
   z-index: 1000;
+  padding: 20px;
 }
 
-.modal {
+.editor-modal {
   background-color: white;
   border-radius: 8px;
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
-  width: 90%;
-  max-width: 600px;
-  max-height: 80vh;
-  overflow-y: auto;
-}
-
-/* 文章编辑模态框样式 */
-.article-editor-modal {
-  max-width: 90vw;
-  max-height: 90vh;
   width: 100%;
   max-width: 1200px;
+  max-height: 90vh;
+  overflow-y: auto;
 }
 
 .modal-content {
@@ -358,138 +351,4 @@
 
 .save-button:hover {
   background-color: #1d4ed8;
-}
-
-/* 分栏布局样式 */
-.articles-content-wrapper {
-  display: flex;
-  gap: 1.5rem;
-  width: 100%;
-}
-
-/* 左侧文章列表容器 */
-.articles-list-container {
-  flex: 1;
-  min-width: 0;
-  transition: flex 0.3s ease;
-  width: auto !important;
-  max-width: none !important;
-}
-
-/* 当显示编辑器时，左侧列表保留30%宽度 */
-.articles-page.with-editor .articles-list-container {
-  flex: 0.3 !important;
-  max-width: 30% !important;
-  width: auto !important;
-  overflow-x: auto;
-}
-
-/* 右侧编辑器容器 */
-.articles-editor-container {
-  flex: 0.9 !important;
-  min-width: 0;
-  background-color: white;
-  border-radius: 8px;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
-  display: flex;
-  flex-direction: column;
-  height: calc(100vh - 150px);
-  overflow: hidden;
-  width: auto !important;
-  max-width: none !important;
-}
-
-/* 编辑器头部 */
-.editor-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1.5rem;
-  border-bottom: 1px solid #e2e8f0;
-  background-color: white;
-}
-
-.editor-header h2 {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: #1e293b;
-  margin: 0;
-}
-
-/* 编辑器内容区域 */
-.editor-content {
-  flex: 1;
-  overflow-y: auto;
-  padding: 0;
-}
-
-/* 确保编辑表单在分栏布局中正常显示 */
-.articles-editor-container .article-editor {
-  height: 100%;
-}
-
-.articles-editor-container .editor-form {
-  padding: 1.5rem;
-}
-
-/* 响应式设计 */
-@media (max-width: 1024px) {
-  .articles-page.with-editor .articles-list-container {
-    flex: 0.1 !important;
-    max-width: 10% !important;
-  }
-  
-  .articles-editor-container {
-    flex: 0.9 !important;
-  }
-}
-
-@media (max-width: 768px) {
-  .articles-page {
-    padding: 0 1rem;
-  }
-  
-  .page-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 1rem;
-  }
-  
-  /* 在移动设备上，分栏布局改为垂直堆叠 */
-  .articles-content-wrapper {
-    flex-direction: column;
-  }
-  
-  .articles-page.with-editor .articles-list-container {
-    flex: 1;
-    max-width: 100%;
-  }
-  
-  .articles-editor-container {
-    flex: 1;
-    height: auto;
-    margin-top: 1rem;
-  }
-  
-  .articles-table th,
-  .articles-table td {
-    padding: 0.75rem 0.5rem;
-    font-size: 0.75rem;
-  }
-  
-  .actions {
-    flex-direction: column;
-    gap: 0.25rem;
-  }
-  
-  .edit-button,
-  .delete-button {
-    padding: 0.25rem 0.5rem;
-    font-size: 0.7rem;
-  }
-  
-  .modal {
-    width: 95%;
-    margin: 1rem;
-  }
 }

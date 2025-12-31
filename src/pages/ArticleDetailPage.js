@@ -12,9 +12,8 @@ const ArticleDetailPage = () => {
     const fetchArticle = async () => {
       try {
         setLoading(true);
-        // 目前dataManager没有getArticleById方法，先从所有文章中查找
         const articles = await dataManager.getAllArticles();
-        const foundArticle = articles.find(article => article.id === id);
+        const foundArticle = articles.find(article => article.id == id);
         
         if (foundArticle) {
           setArticle(foundArticle);
@@ -43,11 +42,11 @@ const ArticleDetailPage = () => {
   return (
     <div className="article-detail-page">
       <div className="article-detail-content">
-        <h1>{article.title?.zh || article.title}</h1>
+        <h1>{article.title}</h1>
         
         {article.cover_image && (
           <div className="article-detail-cover">
-            <img src={article.cover_image} alt={article.title?.zh || article.title} />
+            <img src={article.cover_image} alt={article.title} />
           </div>
         )}
         
@@ -55,11 +54,11 @@ const ArticleDetailPage = () => {
           <span className="article-detail-date">
             {new Date(article.created_at).toLocaleDateString('zh-CN')}
           </span>
-          {article.tags && article.tags.length > 0 && (
+          {article.tags && (
             <div className="article-detail-tags">
-              {article.tags.map((tag, index) => (
+              {article.tags.split(',').map((tag, index) => (
                 <span key={index} className="article-detail-tag">
-                  {tag}
+                  {tag.trim()}
                 </span>
               ))}
             </div>
@@ -67,21 +66,14 @@ const ArticleDetailPage = () => {
         </div>
         
         <div className="article-detail-body">
-          <div dangerouslySetInnerHTML={{ __html: article.content?.zh || article.content }} />
+          <div dangerouslySetInnerHTML={{ __html: article.content }} />
         </div>
         
-        {article.coordinates && (
+        {article.coordinates_lat && article.coordinates_lng && (
           <div className="article-detail-location">
             <h3>游玩地点</h3>
-            <p>纬度: {article.coordinates.lat}</p>
-            <p>经度: {article.coordinates.lng}</p>
-          </div>
-        )}
-        
-        {article.trackData && article.trackData.length > 0 && (
-          <div className="article-detail-track">
-            <h3>游玩轨迹</h3>
-            <p>共记录 {article.trackData.length} 个轨迹点</p>
+            <p>纬度: {article.coordinates_lat}</p>
+            <p>经度: {article.coordinates_lng}</p>
           </div>
         )}
       </div>

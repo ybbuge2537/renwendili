@@ -12,11 +12,11 @@
     "website_name_candidates": ["文舆世界", "寰文地图", "人文舆图", "文景寰球", "地文汇"]
   },
   "progress_overview": {
-    "current_phase": "核心功能实现",
+    "current_phase": "完善与优化",
     "start_date": "2025-12-27",
     "completion_percentage": 90,
-    "last_updated": "2025-12-28T23:00:00",
-    "next_milestone": "完善与优化"
+    "last_updated": "2025-12-30T18:00:00",
+    "next_milestone": "系统测试与部署"
   },
   "task_list": [
     {
@@ -256,6 +256,84 @@
       "description": "实现点击添加文章按钮后的分栏布局，左侧列表缩窄至10%，右侧显示编辑页面",
       "completion_date": "2025-12-28",
       "related_tasks": ["task_006"]
+    },
+    {
+      "id": "work_027",
+      "description": "项目结构重组：前端(src/)、后端(backend/)、文档(文档/)、开发进度(dev_progress/)分离",
+      "completion_date": "2025-12-30",
+      "related_tasks": []
+    },
+    {
+      "id": "work_028",
+      "description": "修复端口冲突：.env中PORT改为SERVER_PORT，解决React开发服务器端口占用",
+      "completion_date": "2025-12-30",
+      "related_tasks": []
+    },
+    {
+      "id": "work_029",
+      "description": "创建生产构建并部署：使用npm run build创建生产版本，通过serve.js在端口3001提供服务",
+      "completion_date": "2025-12-30",
+      "related_tasks": []
+    },
+    {
+      "id": "work_030",
+      "description": "更新开发进度记录：完善开发进度.md和progress.json文件",
+      "completion_date": "2025-12-30",
+      "related_tasks": []
+    },
+    {
+      "id": "work_031",
+      "description": "完善用户管理系统：合并设计文档、扩展数据库字段、实现RBAC权限模型",
+      "completion_date": "2025-12-30",
+      "related_tasks": ["task_005"]
+    },
+    {
+      "id": "work_032",
+      "description": "更新API服务层：添加用户管理新方法（批量操作、状态管理、密码重置等）和角色管理API",
+      "completion_date": "2025-12-30",
+      "related_tasks": ["task_005"]
+    },
+    {
+      "id": "work_033",
+      "description": "更新用户管理页面：支持所有新字段（头像、电话、简介、登录统计）、新增统计面板和筛选功能",
+      "completion_date": "2025-12-30",
+      "related_tasks": ["task_006"]
+    },
+    {
+      "id": "work_034",
+      "description": "创建角色管理功能：开发角色管理页面、权限分配、路由集成",
+      "completion_date": "2025-12-30",
+      "related_tasks": ["task_005"]
+    },
+    {
+      "id": "work_035",
+      "description": "实现用户登录次数统计：更新UserModel登录逻辑、添加数据库字段、执行迁移脚本",
+      "completion_date": "2025-12-30",
+      "related_tasks": ["task_005"]
+    },
+    {
+      "id": "work_036",
+      "description": "分析用户管理设计文档功能实现情况：已完成85%，核心功能完整",
+      "completion_date": "2025-12-30",
+      "related_tasks": ["task_005"]
+    },
+    {
+      "id": "work_037",
+      "description": "分析全球人文地理数据库设计文档功能实现情况：已完成40%，核心表部分实现",
+      "completion_date": "2025-12-30",
+      "related_tasks": ["task_004"]
+    },
+    {
+      "id": "work_038",
+      "description": "创建人员管理开发进度分析文档：详细分析用户管理设计文档实现情况，总体实现度85%",
+      "completion_date": "2025-12-30",
+      "related_tasks": ["task_005"]
+    },
+    {
+      "id": "work_039",
+      "description": "修复登录密码验证问题：修复UserModel中salt为null时的密码验证逻辑，启用admin账户并重置登录错误次数",
+      "completion_date": "2025-12-31",
+      "related_tasks": ["task_005"]
     }
   ],
   "todo_list": [
@@ -268,8 +346,8 @@
     },
     {
       "id": "todo_007",
-      "description": "进行测试与优化",
-      "priority": "medium",
+      "description": "进行系统测试与优化",
+      "priority": "high",
       "due_date": null,
       "related_tasks": ["task_008"]
     },
@@ -282,10 +360,59 @@
     },
     {
       "id": "todo_009",
-      "description": "完善CMS后台功能，增加图层管理和系统设置",
+      "description": "完善CMS后台功能，增加媒体管理和系统设置",
       "priority": "medium",
       "due_date": null,
       "related_tasks": ["task_006"]
+    },
+    {
+      "id": "todo_010",
+      "description": "实现用户操作日志记录和审计功能",
+      "priority": "medium",
+      "due_date": null,
+      "related_tasks": ["task_005"]
+    },
+    {
+      "id": "todo_011",
+      "description": "添加用户数据导出功能（CSV/Excel）",
+      "priority": "low",
+      "due_date": null,
+      "related_tasks": ["task_006"]
+    },
+    {
+      "id": "todo_012",
+      "description": "实现用户贡献表（user_contribution）和相关功能",
+      "priority": "high",
+      "due_date": null,
+      "related_tasks": ["task_004"]
+    },
+    {
+      "id": "todo_013",
+      "description": "实现收藏表（collection）和点赞表（like）功能",
+      "priority": "high",
+      "due_date": null,
+      "related_tasks": ["task_007"]
+    },
+    {
+      "id": "todo_014",
+      "description": "集成Redis缓存提升性能",
+      "priority": "medium",
+      "due_date": null,
+      "related_tasks": ["task_004"]
+    },
+    {
+      "id": "todo_015",
+      "description": "实现数据备份策略（全量、增量、binlog）",
+      "priority": "high",
+      "due_date": null,
+      "related_tasks": ["task_008"]
+    },
+    {
+      "id": "todo_016",
+      "description": "集成阿里云OSS存储媒体文件",
+      "priority": "medium",
+      "due_date": null,
+      "related_tasks": ["task_004"]
     }
   ],
   "issues_and_risks": [

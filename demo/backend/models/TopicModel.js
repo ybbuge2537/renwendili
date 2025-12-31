@@ -1,5 +1,5 @@
 // 专题模型
-import { executeQuery } from '../services/dbConnection.js';
+const { executeQuery } = require('../services/dbConnection.js');
 
 class TopicModel {
   // 获取所有专题
@@ -68,4 +68,4 @@ class TopicModel {
   }
 }
 
-export default TopicModel;
+module.exports = TopicModel;

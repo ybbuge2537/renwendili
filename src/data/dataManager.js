@@ -11,25 +11,39 @@ class DataManager {
     this.articles = [];
     this.articlesMetadata = {};
     
-    // Initialize data from API
-    this.init();
+    // Initialization state
+    this.isInitialized = false;
   }
   
   async init() {
     try {
       // Load all data from API services
       const locationsData = await apiService.region.getAllRegions();
-      const articlesData = await apiService.topic.getAllTopics();
+      const articlesData = await apiService.article.getAllArticles();
       
-      // Map API data to internal structure
-      this.locations = locationsData.map(this.convertDbRegionToFrontend.bind(this));
-      this.articles = articlesData.map(this.convertDbTopicToFrontend.bind(this));
+      // Check if data exists before mapping
+      if (Array.isArray(locationsData)) {
+        this.locations = locationsData.map(this.convertDbRegionToFrontend.bind(this));
+      }
       
-      console.log('Data initialized successfully from API');
+      if (Array.isArray(articlesData)) {
+        this.articles = articlesData.map(this.convertDbArticleToFrontend.bind(this));
+      } else if (articlesData && Array.isArray(articlesData.articles)) {
+        this.articles = articlesData.articles.map(this.convertDbArticleToFrontend.bind(this));
+      }
+      
+      this.isInitialized = true;
     } catch (error) {
       console.error('Failed to initialize data from API, using local JSON as fallback:', error);
       // Fallback to local JSON if API fails
       await this.loadLocalData();
+      this.isInitialized = true;
+    }
+  }
+
+  async ensureInitialized() {
+    if (!this.isInitialized) {
+      await this.init();
     }
   }
   
@@ -47,8 +61,6 @@ class DataManager {
       this.articlesMetadata = articlesData.metadata;
       
       this.websiteSettings = settingsData.website_settings;
-      
-      console.log('Local data loaded successfully as fallback');
     } catch (error) {
       console.error('Failed to load local data:', error);
     }
@@ -60,7 +72,7 @@ class DataManager {
     
     // 解析经纬度
     let coordinates = { lng: 0, lat: 0 };
-    if (region.location) {
+    if (region.location && typeof region.location === 'string') {
       const match = region.location.match(/POINT\((\d+\.?\d*) (\d+\.?\d*)\)/);
       if (match) {
         coordinates = { lng: parseFloat(match[1]), lat: parseFloat(match[2]) };
@@ -96,6 +108,7 @@ class DataManager {
 
   // 获取所有地点
   async getAllLocations() {
+    await this.ensureInitialized();
     try {
       const regions = await apiService.region.getAllRegions();
       // 转换为前端需要的格式
@@ -112,6 +125,7 @@ class DataManager {
 
   // 根据图层获取地点
   async getLocationsByLayer(layer) {
+    await this.ensureInitialized();
     const locations = await this.getAllLocations();
     if (!layer || layer === 'all') {
       return locations;
@@ -121,6 +135,7 @@ class DataManager {
 
   // 根据ID获取地点
   async getLocationById(id) {
+    await this.ensureInitialized();
     try {
       const region = await apiService.region.getRegionById(id);
       if (region) {
@@ -135,18 +150,21 @@ class DataManager {
 
   // 根据标签获取地点
   async getLocationsByTag(tag) {
+    await this.ensureInitialized();
     const locations = await this.getAllLocations();
     return locations.filter(location => location.tags && location.tags.includes(tag));
   }
 
   // 根据类型获取地点
   async getLocationsByType(type) {
+    await this.ensureInitialized();
     const locations = await this.getAllLocations();
     return locations.filter(location => location.type === type);
   }
 
   // 搜索地点
   async searchLocations(query, language = 'zh') {
+    await this.ensureInitialized();
     const locations = await this.getAllLocations();
     const lowerQuery = query.toLowerCase();
     return locations.filter(location => 
@@ -279,60 +297,48 @@ class DataManager {
 
 
 
-  // 辅助方法：将数据库格式的专题转换为前端格式
-  convertDbTopicToFrontend(topic) {
-    if (!topic) return null;
-    
-    // 解析地理坐标
-    let coordinates = null;
-    if (topic.coordinates) {
-      try {
-        coordinates = JSON.parse(topic.coordinates);
-      } catch (error) {
-        console.error('解析coordinates失败:', error);
-        coordinates = null;
-      }
-    }
-    
-    // 解析轨迹数据
-    let trackData = [];
-    if (topic.track_data) {
-      try {
-        trackData = JSON.parse(topic.track_data);
-      } catch (error) {
-        console.error('解析trackData失败:', error);
-        trackData = [];
-      }
-    }
+  // 辅助方法：将数据库格式的文章转换为前端格式
+  convertDbArticleToFrontend(article) {
+    if (!article) return null;
     
     return {
-      id: topic.topic_id,
-      title: { zh: topic.title },
-      cover_image: topic.cover_url || '',
-      content: { zh: topic.content },
-      location_id: topic.region_id,
-      author_id: topic.author_id,
-      status: topic.status || '草稿',
-      created_at: topic.create_time || new Date().toISOString(),
-      updated_at: topic.update_time || new Date().toISOString(),
-      tags: [], // 默认值，可根据需要扩展
-      category_id: null, // 默认值，可根据需要扩展
-      coordinates: coordinates,
-      trackData: trackData
+      id: article.article_id,
+      title: article.title,
+      content: article.content,
+      author_id: article.author_id,
+      region_id: article.region_id,
+      status: article.status,
+      created_at: article.create_time || new Date().toISOString(),
+      updated_at: article.update_time || new Date().toISOString(),
+      coordinates_lat: article.coordinates_lat,
+      coordinates_lng: article.coordinates_lng,
+      category: article.category || 'culture',
+      tags: article.tags,
+      cover_image: article.cover_image,
+      author_name: article.author_name,
+      views: article.views,
+      culture_background: article.culture_background,
+      opening_hours: article.opening_hours,
+      ticket_price: article.ticket_price,
+      transportation: article.transportation,
+      video_url: article.video_url,
+      culture_tips: article.culture_tips
     };
   }
 
   // 辅助方法：将前端格式的文章转换为数据库格式
   convertFrontendArticleToDb(article) {
     return {
-      title: article.title.zh,
-      cover_url: article.cover_image || '',
-      content: article.content.zh || '',
-      region_id: article.location_id || null,
+      title: article.title,
+      content: article.content,
+      region_id: article.region_id || null,
       author_id: article.author_id,
       status: article.status || 'draft',
-      coordinates: article.coordinates ? JSON.stringify(article.coordinates) : null,
-      track_data: article.trackData && article.trackData.length > 0 ? JSON.stringify(article.trackData) : null
+      coordinates_lat: article.coordinates_lat || null,
+      coordinates_lng: article.coordinates_lng || null,
+      category: article.category || 'culture',
+      tags: article.tags || null,
+      cover_image: article.cover_image || null
     };
   }
 
@@ -341,14 +347,13 @@ class DataManager {
   // 文章管理相关方法
   async getAllArticles() {
     try {
-      const topics = await apiService.topic.getAllTopics();
-      // 转换为前端需要的格式
-      const articles = topics.map(topic => this.convertDbTopicToFrontend(topic));
-      // 更新本地缓存
-      this.articles = articles;
-      this.articlesMetadata.total_articles = articles.length;
+      const result = await apiService.article.getAllArticles();
+      const articles = result.articles || result;
+      const formattedArticles = articles.map(article => this.convertDbArticleToFrontend(article));
+      this.articles = formattedArticles;
+      this.articlesMetadata.total_articles = formattedArticles.length;
       this.articlesMetadata.last_updated = new Date().toISOString();
-      return articles;
+      return formattedArticles;
     } catch (error) {
       console.error('获取所有文章失败:', error);
       return this.articles;
@@ -357,9 +362,9 @@ class DataManager {
 
   async getArticleById(id) {
     try {
-      const topic = await apiService.topic.getTopicById(id);
-      if (topic) {
-        return this.convertDbTopicToFrontend(topic);
+      const article = await apiService.article.getArticleById(id);
+      if (article) {
+        return this.convertDbArticleToFrontend(article);
       }
       return null;
     } catch (error) {
@@ -372,23 +377,23 @@ class DataManager {
     const articles = await this.getAllArticles();
     const lowerQuery = query.toLowerCase();
     return articles.filter(article => 
-      article.title[language].toLowerCase().includes(lowerQuery) ||
-      article.content[language].toLowerCase().includes(lowerQuery)
+      article.title.toLowerCase().includes(lowerQuery) ||
+      article.content.toLowerCase().includes(lowerQuery)
     );
   }
 
   async addArticle(article) {
     try {
       // 转换为数据库格式
-      const topicData = this.convertFrontendArticleToDb(article);
-      const newTopic = await apiService.topic.createTopic(topicData);
+      const articleData = this.convertFrontendArticleToDb(article);
+      const newArticle = await apiService.article.createArticle(articleData);
       // 转换回前端格式
-      const newArticle = this.convertDbTopicToFrontend(newTopic);
+      const formattedArticle = this.convertDbArticleToFrontend(newArticle);
       // 更新本地缓存
-      this.articles.push(newArticle);
+      this.articles.push(formattedArticle);
       this.articlesMetadata.total_articles = this.articles.length;
       this.articlesMetadata.last_updated = new Date().toISOString();
-      return newArticle;
+      return formattedArticle;
     } catch (error) {
       console.error('添加文章失败:', error);
       // 降级到本地处理
@@ -420,11 +425,11 @@ class DataManager {
       };
       
       // 转换为数据库格式
-      const topicData = this.convertFrontendArticleToDb(updatedArticle);
-      const updatedTopic = await apiService.topic.updateTopic(id, topicData);
+      const articleData = this.convertFrontendArticleToDb(updatedArticle);
+      const updatedDbArticle = await apiService.article.updateArticle(id, articleData);
       
       // 转换回前端格式
-      const finalArticle = this.convertDbTopicToFrontend(updatedTopic);
+      const finalArticle = this.convertDbArticleToFrontend(updatedDbArticle);
       
       // 更新本地缓存
       const index = this.articles.findIndex(article => article.id === id);
@@ -453,7 +458,7 @@ class DataManager {
 
   async deleteArticle(id) {
     try {
-      const success = await apiService.topic.deleteTopic(id);
+      const success = await apiService.article.deleteArticle(id);
       if (success) {
         // 更新本地缓存
         const index = this.articles.findIndex(article => article.id === id);
